@@ -1,19 +1,24 @@
--- Glenn4you Mini UI Library (FIXED)
+-- Glenn4you Mini UI Library (FINAL FIX / DELTA SAFE)
 
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
 local Library = {}
 
+-- REMOVE DUPLICATE
+pcall(function()
+	game.CoreGui:FindFirstChild("Glenn4youUI"):Destroy()
+end)
+
 -- GUI
 local Gui = Instance.new("ScreenGui")
 Gui.Name = "Glenn4youUI"
 Gui.Parent = game.CoreGui
 Gui.ResetOnSpawn = false
-Gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 
 -- BLOCKER
-local Blocker = Instance.new("TextButton", Gui)
+local Blocker = Instance.new("TextButton")
+Blocker.Parent = Gui
 Blocker.Size = UDim2.fromScale(1,1)
 Blocker.BackgroundTransparency = 1
 Blocker.Text = ""
@@ -21,7 +26,8 @@ Blocker.Visible = false
 Blocker.ZIndex = 50
 
 -- SHADOW
-local Shadow = Instance.new("Frame", Gui)
+local Shadow = Instance.new("Frame")
+Shadow.Parent = Gui
 Shadow.Size = UDim2.fromOffset(330,300)
 Shadow.Position = UDim2.fromScale(0.5,0.5)
 Shadow.AnchorPoint = Vector2.new(0.5,0.5)
@@ -31,7 +37,8 @@ Shadow.ZIndex = 1
 Instance.new("UICorner", Shadow).CornerRadius = UDim.new(0,24)
 
 -- MAIN
-local Main = Instance.new("Frame", Gui)
+local Main = Instance.new("Frame")
+Main.Parent = Gui
 Main.Size = UDim2.fromOffset(320,290)
 Main.Position = Shadow.Position
 Main.AnchorPoint = Vector2.new(0.5,0.5)
@@ -40,30 +47,40 @@ Main.Active = true
 Main.ZIndex = 2
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0,22)
 
--- DRAG
-do
-	local drag, start, pos
-	Main.InputBegan:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1 then
+-- DRAG FUNCTION (REUSABLE)
+local function MakeDraggable(frame, follow)
+	local drag, startPos, framePos
+	frame.InputBegan:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.MouseButton1
+		or i.UserInputType == Enum.UserInputType.Touch then
 			drag = true
-			start = i.Position
-			pos = Main.Position
+			startPos = i.Position
+			framePos = frame.Position
 		end
 	end)
-	Main.InputEnded:Connect(function()
-		drag = false
+
+	frame.InputEnded:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.MouseButton1
+		or i.UserInputType == Enum.UserInputType.Touch then
+			drag = false
+		end
 	end)
+
 	UIS.InputChanged:Connect(function(i)
-		if drag and i.UserInputType == Enum.UserInputType.MouseMovement then
-			local d = i.Position - start
-			Main.Position = pos + UDim2.fromOffset(d.X,d.Y)
-			Shadow.Position = Main.Position
+		if drag and (i.UserInputType == Enum.UserInputType.MouseMovement
+		or i.UserInputType == Enum.UserInputType.Touch) then
+			local delta = i.Position - startPos
+			frame.Position = framePos + UDim2.fromOffset(delta.X, delta.Y)
+			if follow then follow.Position = frame.Position end
 		end
 	end)
 end
 
+MakeDraggable(Main, Shadow)
+
 -- TITLE
-local Title = Instance.new("TextLabel", Main)
+local Title = Instance.new("TextLabel")
+Title.Parent = Main
 Title.Size = UDim2.new(1,-60,0,36)
 Title.Position = UDim2.new(0,14,0,10)
 Title.BackgroundTransparency = 1
@@ -72,10 +89,10 @@ Title.TextSize = 16
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.TextColor3 = Color3.new(1,1,1)
 Title.Text = "Glenn4you | UI"
-Title.ZIndex = 5
 
 -- CLOSE
-local Close = Instance.new("TextButton", Main)
+local Close = Instance.new("TextButton")
+Close.Parent = Main
 Close.Size = UDim2.fromOffset(26,26)
 Close.Position = UDim2.new(1,-36,0,10)
 Close.Text = "✕"
@@ -83,28 +100,27 @@ Close.Font = Enum.Font.GothamBold
 Close.TextSize = 16
 Close.TextColor3 = Color3.fromRGB(230,230,230)
 Close.BackgroundColor3 = Color3.fromRGB(40,40,45)
-Close.ZIndex = 6
 Instance.new("UICorner", Close).CornerRadius = UDim.new(1,0)
 
--- CONTENT (FIX: ScrollingFrame)
-local Content = Instance.new("ScrollingFrame", Main)
+-- CONTENT (PLAIN FRAME — NO SCROLL BUG)
+local Content = Instance.new("Frame")
+Content.Parent = Main
 Content.Size = UDim2.new(1,-28,1,-64)
 Content.Position = UDim2.new(0,14,0,52)
-Content.CanvasSize = UDim2.new(0,0,0,0)
-Content.ScrollBarImageTransparency = 1
 Content.BackgroundTransparency = 1
-Content.AutomaticCanvasSize = Enum.AutomaticSize.None
-Content.ZIndex = 3
 
-local Layout = Instance.new("UIListLayout", Content)
+local Layout = Instance.new("UIListLayout")
+Layout.Parent = Content
 Layout.Padding = UDim.new(0,10)
 
+-- AUTO RESIZE CONTENT
 Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-	Content.CanvasSize = UDim2.fromOffset(0, Layout.AbsoluteContentSize.Y + 10)
+	Content.Size = UDim2.new(1,-28,0,Layout.AbsoluteContentSize.Y)
 end)
 
--- CLOSE / OPEN
-local OpenBtn = Instance.new("TextButton", Gui)
+-- OPEN BUTTON
+local OpenBtn = Instance.new("TextButton")
+OpenBtn.Parent = Gui
 OpenBtn.Size = UDim2.fromOffset(70,36)
 OpenBtn.Position = UDim2.fromScale(0.1,0.6)
 OpenBtn.Text = "OPEN"
@@ -115,6 +131,8 @@ OpenBtn.BackgroundColor3 = Color3.fromRGB(30,30,34)
 OpenBtn.Visible = false
 OpenBtn.ZIndex = 100
 Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1,0)
+
+MakeDraggable(OpenBtn)
 
 Close.MouseButton1Click:Connect(function()
 	Main.Visible = false
@@ -132,13 +150,13 @@ end)
 
 function Library:CreateJudul(text)
 	Title.Text = "Glenn4you | "..tostring(text)
-	return Title
 end
 
 function Library:Toggle(text, callback)
 	local state = false
 
-	local Row = Instance.new("Frame", Content)
+	local Row = Instance.new("Frame")
+	Row.Parent = Content
 	Row.Size = UDim2.new(1,0,0,32)
 	Row.BackgroundTransparency = 1
 
@@ -177,7 +195,8 @@ function Library:Toggle(text, callback)
 end
 
 function Library:Button(text, callback)
-	local Btn = Instance.new("TextButton", Content)
+	local Btn = Instance.new("TextButton")
+	Btn.Parent = Content
 	Btn.Size = UDim2.new(1,0,0,32)
 	Btn.BackgroundColor3 = Color3.fromRGB(40,40,45)
 	Btn.Text = text
@@ -194,7 +213,8 @@ end
 function Library:Dropdown(text, options, callback)
 	local open = false
 
-	local Row = Instance.new("Frame", Content)
+	local Row = Instance.new("Frame")
+	Row.Parent = Content
 	Row.Size = UDim2.new(1,0,0,32)
 	Row.BackgroundTransparency = 1
 
@@ -217,7 +237,8 @@ function Library:Dropdown(text, options, callback)
 	Box.TextColor3 = Color3.fromRGB(230,230,230)
 	Instance.new("UICorner", Box).CornerRadius = UDim.new(0,8)
 
-	local Drop = Instance.new("Frame", Row)
+	local Drop = Instance.new("Frame")
+	Drop.Parent = Row
 	Drop.Position = UDim2.new(1,-84,1,6)
 	Drop.Size = UDim2.fromOffset(84,0)
 	Drop.BackgroundColor3 = Color3.fromRGB(40,40,45)
