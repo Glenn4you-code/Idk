@@ -1,14 +1,14 @@
--- Glenn4you UI Mini Library
--- Only: Title | Toggle | Dropdown | Button
+-- Glenn4you Mini UI Library (FIXED)
 
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
 local Library = {}
-local State = {}
 
 -- GUI
-local Gui = Instance.new("ScreenGui", game.CoreGui)
+local Gui = Instance.new("ScreenGui")
+Gui.Name = "Glenn4youUI"
+Gui.Parent = game.CoreGui
 Gui.ResetOnSpawn = false
 Gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 
@@ -18,11 +18,11 @@ Blocker.Size = UDim2.fromScale(1,1)
 Blocker.BackgroundTransparency = 1
 Blocker.Text = ""
 Blocker.Visible = false
-Blocker.ZIndex = 10
+Blocker.ZIndex = 50
 
 -- SHADOW
 local Shadow = Instance.new("Frame", Gui)
-Shadow.Size = UDim2.fromOffset(330,270)
+Shadow.Size = UDim2.fromOffset(330,300)
 Shadow.Position = UDim2.fromScale(0.5,0.5)
 Shadow.AnchorPoint = Vector2.new(0.5,0.5)
 Shadow.BackgroundColor3 = Color3.new(0,0,0)
@@ -32,7 +32,7 @@ Instance.new("UICorner", Shadow).CornerRadius = UDim.new(0,24)
 
 -- MAIN
 local Main = Instance.new("Frame", Gui)
-Main.Size = UDim2.fromOffset(320,260)
+Main.Size = UDim2.fromOffset(320,290)
 Main.Position = Shadow.Position
 Main.AnchorPoint = Vector2.new(0.5,0.5)
 Main.BackgroundColor3 = Color3.fromRGB(22,22,25)
@@ -72,7 +72,7 @@ Title.TextSize = 16
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.TextColor3 = Color3.new(1,1,1)
 Title.Text = "Glenn4you | UI"
-Title.ZIndex = 3
+Title.ZIndex = 5
 
 -- CLOSE
 local Close = Instance.new("TextButton", Main)
@@ -83,19 +83,27 @@ Close.Font = Enum.Font.GothamBold
 Close.TextSize = 16
 Close.TextColor3 = Color3.fromRGB(230,230,230)
 Close.BackgroundColor3 = Color3.fromRGB(40,40,45)
-Close.ZIndex = 5
+Close.ZIndex = 6
 Instance.new("UICorner", Close).CornerRadius = UDim.new(1,0)
 
--- CONTENT
-local Content = Instance.new("Frame", Main)
+-- CONTENT (FIX: ScrollingFrame)
+local Content = Instance.new("ScrollingFrame", Main)
 Content.Size = UDim2.new(1,-28,1,-64)
 Content.Position = UDim2.new(0,14,0,52)
+Content.CanvasSize = UDim2.new(0,0,0,0)
+Content.ScrollBarImageTransparency = 1
 Content.BackgroundTransparency = 1
+Content.AutomaticCanvasSize = Enum.AutomaticSize.None
+Content.ZIndex = 3
 
 local Layout = Instance.new("UIListLayout", Content)
 Layout.Padding = UDim.new(0,10)
 
--- OPEN BUTTON
+Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	Content.CanvasSize = UDim2.fromOffset(0, Layout.AbsoluteContentSize.Y + 10)
+end)
+
+-- CLOSE / OPEN
 local OpenBtn = Instance.new("TextButton", Gui)
 OpenBtn.Size = UDim2.fromOffset(70,36)
 OpenBtn.Position = UDim2.fromScale(0.1,0.6)
@@ -105,7 +113,7 @@ OpenBtn.TextSize = 14
 OpenBtn.TextColor3 = Color3.fromRGB(230,230,230)
 OpenBtn.BackgroundColor3 = Color3.fromRGB(30,30,34)
 OpenBtn.Visible = false
-OpenBtn.ZIndex = 30
+OpenBtn.ZIndex = 100
 Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1,0)
 
 Close.MouseButton1Click:Connect(function()
@@ -120,16 +128,15 @@ OpenBtn.MouseButton1Click:Connect(function()
 	OpenBtn.Visible = false
 end)
 
--- =========================
--- API
--- =========================
+-- ================= API =================
 
 function Library:CreateJudul(text)
 	Title.Text = "Glenn4you | "..tostring(text)
+	return Title
 end
 
 function Library:Toggle(text, callback)
-	State[text] = false
+	local state = false
 
 	local Row = Instance.new("Frame", Content)
 	Row.Size = UDim2.new(1,0,0,32)
@@ -158,14 +165,29 @@ function Library:Toggle(text, callback)
 	Instance.new("UICorner", Dot).CornerRadius = UDim.new(1,0)
 
 	Btn.MouseButton1Click:Connect(function()
-		State[text] = not State[text]
+		state = not state
 		TweenService:Create(Btn,TweenInfo.new(0.2),{
-			BackgroundColor3 = State[text] and Color3.fromRGB(255,70,70) or Color3.fromRGB(55,55,60)
+			BackgroundColor3 = state and Color3.fromRGB(255,70,70) or Color3.fromRGB(55,55,60)
 		}):Play()
 		TweenService:Create(Dot,TweenInfo.new(0.2),{
-			Position = State[text] and UDim2.new(1,-20,0.5,-9) or UDim2.new(0,2,0.5,-9)
+			Position = state and UDim2.new(1,-20,0.5,-9) or UDim2.new(0,2,0.5,-9)
 		}):Play()
-		if callback then callback(State[text]) end
+		if callback then callback(state) end
+	end)
+end
+
+function Library:Button(text, callback)
+	local Btn = Instance.new("TextButton", Content)
+	Btn.Size = UDim2.new(1,0,0,32)
+	Btn.BackgroundColor3 = Color3.fromRGB(40,40,45)
+	Btn.Text = text
+	Btn.Font = Enum.Font.GothamBold
+	Btn.TextSize = 14
+	Btn.TextColor3 = Color3.fromRGB(230,230,230)
+	Instance.new("UICorner", Btn).CornerRadius = UDim.new(0,10)
+
+	Btn.MouseButton1Click:Connect(function()
+		if callback then callback() end
 	end)
 end
 
@@ -200,7 +222,7 @@ function Library:Dropdown(text, options, callback)
 	Drop.Size = UDim2.fromOffset(84,0)
 	Drop.BackgroundColor3 = Color3.fromRGB(40,40,45)
 	Drop.ClipsDescendants = true
-	Drop.ZIndex = 20
+	Drop.ZIndex = 60
 	Instance.new("UICorner", Drop).CornerRadius = UDim.new(0,8)
 
 	for i,v in ipairs(options) do
@@ -230,21 +252,6 @@ function Library:Dropdown(text, options, callback)
 		TweenService:Create(Drop,TweenInfo.new(0.2),{
 			Size = open and UDim2.fromOffset(84,#options*26) or UDim2.fromOffset(84,0)
 		}):Play()
-	end)
-end
-
-function Library:Button(text, callback)
-	local Btn = Instance.new("TextButton", Content)
-	Btn.Size = UDim2.new(1,0,0,32)
-	Btn.BackgroundColor3 = Color3.fromRGB(40,40,45)
-	Btn.Text = text
-	Btn.Font = Enum.Font.GothamBold
-	Btn.TextSize = 14
-	Btn.TextColor3 = Color3.fromRGB(230,230,230)
-	Instance.new("UICorner", Btn).CornerRadius = UDim.new(0,10)
-
-	Btn.MouseButton1Click:Connect(function()
-		if callback then callback() end
 	end)
 end
 
