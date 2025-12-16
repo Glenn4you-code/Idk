@@ -1,5 +1,4 @@
--- Glenn4you UI Library
--- Simple | Clean | No Tabs
+-- Glenn4you UI Library (FIXED STABLE)
 
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -7,7 +6,7 @@ local TweenService = game:GetService("TweenService")
 local Library = {}
 local TITLE_LEFT = "Glenn4you | "
 
--- STATE GUI
+-- GUI
 local Gui = Instance.new("ScreenGui")
 Gui.Name = "Glenn4youUI"
 Gui.Parent = game.CoreGui
@@ -92,59 +91,12 @@ Content.ZIndex = 3
 local Layout = Instance.new("UIListLayout", Content)
 Layout.Padding = UDim.new(0,10)
 
--- OPEN BUTTON
-local OpenBtn = Instance.new("TextButton", Gui)
-OpenBtn.Size = UDim2.fromOffset(80,36)
-OpenBtn.Position = UDim2.fromScale(0.1,0.6)
-OpenBtn.Text = "OPEN"
-OpenBtn.Font = Enum.Font.GothamBold
-OpenBtn.TextSize = 14
-OpenBtn.TextColor3 = Color3.fromRGB(230,230,230)
-OpenBtn.BackgroundColor3 = Color3.fromRGB(30,30,34)
-OpenBtn.Visible = false
-OpenBtn.ZIndex = 30
-Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1,0)
-
--- DRAG OPEN BUTTON
-do
-	local drag, start, pos
-	OpenBtn.InputBegan:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1 then
-			drag = true
-			start = i.Position
-			pos = OpenBtn.Position
-		end
-	end)
-	OpenBtn.InputEnded:Connect(function()
-		drag = false
-	end)
-	UIS.InputChanged:Connect(function(i)
-		if drag and i.UserInputType == Enum.UserInputType.MouseMovement then
-			local d = i.Position - start
-			OpenBtn.Position = pos + UDim2.fromOffset(d.X,d.Y)
-		end
-	end)
-end
-
--- OPEN / CLOSE
-Close.MouseButton1Click:Connect(function()
-	Main.Visible = false
-	Shadow.Visible = false
-	OpenBtn.Visible = true
-end)
-
-OpenBtn.MouseButton1Click:Connect(function()
-	Main.Visible = true
-	Shadow.Visible = true
-	OpenBtn.Visible = false
-end)
-
 ------------------------------------------------
 -- API
 ------------------------------------------------
 
 function Library:CreateJudul(text)
-	Title.Text = TITLE_LEFT..text
+	Title.Text = TITLE_LEFT .. text
 end
 
 -- TOGGLE
@@ -154,6 +106,7 @@ function Library:Toggle(text, callback)
 	local Row = Instance.new("Frame", Content)
 	Row.Size = UDim2.new(1,0,0,32)
 	Row.BackgroundTransparency = 1
+	Row.ZIndex = 4
 
 	local Label = Instance.new("TextLabel", Row)
 	Label.Size = UDim2.new(1,-80,1,0)
@@ -163,18 +116,21 @@ function Library:Toggle(text, callback)
 	Label.TextSize = 14
 	Label.TextXAlignment = Enum.TextXAlignment.Left
 	Label.TextColor3 = Color3.fromRGB(230,230,230)
+	Label.ZIndex = 4
 
 	local Btn = Instance.new("TextButton", Row)
 	Btn.Size = UDim2.fromOffset(44,22)
 	Btn.Position = UDim2.new(1,-44,0.5,-11)
 	Btn.BackgroundColor3 = Color3.fromRGB(55,55,60)
 	Btn.Text = ""
+	Btn.ZIndex = 4
 	Instance.new("UICorner", Btn).CornerRadius = UDim.new(1,0)
 
 	local Dot = Instance.new("Frame", Btn)
 	Dot.Size = UDim2.fromOffset(18,18)
 	Dot.Position = UDim2.new(0,2,0.5,-9)
 	Dot.BackgroundColor3 = Color3.fromRGB(200,200,200)
+	Dot.ZIndex = 5
 	Instance.new("UICorner", Dot).CornerRadius = UDim.new(1,0)
 
 	Btn.MouseButton1Click:Connect(function()
@@ -185,17 +141,18 @@ function Library:Toggle(text, callback)
 		TweenService:Create(Dot,TweenInfo.new(0.2),{
 			Position = state and UDim2.new(1,-20,0.5,-9) or UDim2.new(0,2,0.5,-9)
 		}):Play()
-		callback(state)
+		if callback then callback(state) end
 	end)
 end
 
--- DROPDOWN (BUG FIXED)
+-- DROPDOWN
 function Library:Dropdown(text, list, callback)
 	local open = false
 
 	local Row = Instance.new("Frame", Content)
 	Row.Size = UDim2.new(1,0,0,32)
 	Row.BackgroundTransparency = 1
+	Row.ZIndex = 4
 
 	local Label = Instance.new("TextLabel", Row)
 	Label.Size = UDim2.new(1,-110,1,0)
@@ -205,6 +162,7 @@ function Library:Dropdown(text, list, callback)
 	Label.TextSize = 14
 	Label.TextXAlignment = Enum.TextXAlignment.Left
 	Label.TextColor3 = Color3.fromRGB(230,230,230)
+	Label.ZIndex = 4
 
 	local Box = Instance.new("TextButton", Row)
 	Box.Size = UDim2.fromOffset(90,24)
@@ -214,6 +172,7 @@ function Library:Dropdown(text, list, callback)
 	Box.Font = Enum.Font.Gotham
 	Box.TextSize = 13
 	Box.TextColor3 = Color3.fromRGB(230,230,230)
+	Box.ZIndex = 5
 	Instance.new("UICorner", Box).CornerRadius = UDim.new(0,8)
 
 	local Drop = Instance.new("Frame", Row)
@@ -221,7 +180,7 @@ function Library:Dropdown(text, list, callback)
 	Drop.Size = UDim2.fromOffset(90,0)
 	Drop.BackgroundColor3 = Color3.fromRGB(40,40,45)
 	Drop.ClipsDescendants = true
-	Drop.ZIndex = 20
+	Drop.ZIndex = 10
 	Instance.new("UICorner", Drop).CornerRadius = UDim.new(0,8)
 
 	for i,v in ipairs(list) do
@@ -233,6 +192,7 @@ function Library:Dropdown(text, list, callback)
 		Opt.Font = Enum.Font.Gotham
 		Opt.TextSize = 13
 		Opt.TextColor3 = Color3.fromRGB(220,220,220)
+		Opt.ZIndex = 11
 
 		Opt.MouseButton1Click:Connect(function()
 			Box.Text = v.." ▼"
@@ -240,7 +200,7 @@ function Library:Dropdown(text, list, callback)
 			TweenService:Create(Drop,TweenInfo.new(0.2),{
 				Size = UDim2.fromOffset(90,0)
 			}):Play()
-			callback(v)
+			if callback then callback(v) end
 		end)
 	end
 
@@ -252,11 +212,12 @@ function Library:Dropdown(text, list, callback)
 	end)
 end
 
--- BUTTON (LABEL + CLICK BUTTON)
+-- BUTTON
 function Library:Button(text, btnText, callback)
 	local Row = Instance.new("Frame", Content)
 	Row.Size = UDim2.new(1,0,0,32)
 	Row.BackgroundTransparency = 1
+	Row.ZIndex = 4
 
 	local Label = Instance.new("TextLabel", Row)
 	Label.Size = UDim2.new(1,-110,1,0)
@@ -266,6 +227,7 @@ function Library:Button(text, btnText, callback)
 	Label.TextSize = 14
 	Label.TextXAlignment = Enum.TextXAlignment.Left
 	Label.TextColor3 = Color3.fromRGB(230,230,230)
+	Label.ZIndex = 4
 
 	local Btn = Instance.new("TextButton", Row)
 	Btn.Size = UDim2.fromOffset(90,24)
@@ -275,10 +237,11 @@ function Library:Button(text, btnText, callback)
 	Btn.Font = Enum.Font.GothamBold
 	Btn.TextSize = 13
 	Btn.TextColor3 = Color3.fromRGB(230,230,230)
+	Btn.ZIndex = 5
 	Instance.new("UICorner", Btn).CornerRadius = UDim.new(0,8)
 
 	Btn.MouseButton1Click:Connect(function()
-		callback()
+		if callback then callback() end
 	end)
 end
 
