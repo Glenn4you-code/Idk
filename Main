@@ -1,4 +1,4 @@
--- Glenn4you UI Library (STABLE FINAL)
+-- Glenn4you UI Library (FINAL FIX)
 
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -6,14 +6,12 @@ local TweenService = game:GetService("TweenService")
 local Library = {}
 
 -- ================= GUI =================
-local Gui = Instance.new("ScreenGui")
-Gui.Name = "Glenn4youUI"
-Gui.Parent = game.CoreGui
+local Gui = Instance.new("ScreenGui", game.CoreGui)
 Gui.ResetOnSpawn = false
 Gui.IgnoreGuiInset = true
 Gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 
--- ================ SHADOW ================
+-- SHADOW
 local Shadow = Instance.new("Frame", Gui)
 Shadow.Size = UDim2.fromOffset(330,270)
 Shadow.Position = UDim2.fromScale(0.5,0.5)
@@ -23,7 +21,7 @@ Shadow.BackgroundTransparency = 0.45
 Shadow.ZIndex = 1
 Instance.new("UICorner", Shadow).CornerRadius = UDim.new(0,24)
 
--- ================= MAIN =================
+-- MAIN
 local Main = Instance.new("Frame", Gui)
 Main.Size = UDim2.fromOffset(320,260)
 Main.Position = Shadow.Position
@@ -34,7 +32,7 @@ Main.Selectable = true
 Main.ZIndex = 2
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0,22)
 
--- ================= TITLE =================
+-- TITLE
 local Title = Instance.new("TextLabel", Main)
 Title.Size = UDim2.new(1,-60,0,36)
 Title.Position = UDim2.new(0,14,0,10)
@@ -46,26 +44,23 @@ Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.TextColor3 = Color3.new(1,1,1)
 Title.ZIndex = 5
 
--- ================= DRAG =================
+-- DRAG (TITLE ONLY)
 do
-	local dragging, dragStart, startPos
-
+	local dragging, start, pos
 	Title.InputBegan:Connect(function(i)
 		if i.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = true
-			dragStart = i.Position
-			startPos = Main.Position
+			start = i.Position
+			pos = Main.Position
 		end
 	end)
-
 	UIS.InputChanged:Connect(function(i)
 		if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
-			local d = i.Position - dragStart
-			Main.Position = startPos + UDim2.fromOffset(d.X, d.Y)
+			local d = i.Position - start
+			Main.Position = pos + UDim2.fromOffset(d.X,d.Y)
 			Shadow.Position = Main.Position
 		end
 	end)
-
 	UIS.InputEnded:Connect(function(i)
 		if i.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = false
@@ -73,7 +68,30 @@ do
 	end)
 end
 
--- ================= CLOSE =================
+-- CONTENT
+local Content = Instance.new("Frame", Main)
+Content.Size = UDim2.new(1,-28,1,-64)
+Content.Position = UDim2.new(0,14,0,52)
+Content.BackgroundTransparency = 1
+Content.ZIndex = 3
+
+local Layout = Instance.new("UIListLayout", Content)
+Layout.Padding = UDim.new(0,10)
+
+-- OPEN BUTTON (DIBUAT DULU)
+local OpenBtn = Instance.new("TextButton", Gui)
+OpenBtn.Size = UDim2.fromOffset(60,36)
+OpenBtn.Position = UDim2.new(0,20,0.6,0)
+OpenBtn.Text = "OPEN"
+OpenBtn.Font = Enum.Font.GothamBold
+OpenBtn.TextSize = 14
+OpenBtn.TextColor3 = Color3.fromRGB(230,230,230)
+OpenBtn.BackgroundColor3 = Color3.fromRGB(30,30,34)
+OpenBtn.Visible = false
+OpenBtn.ZIndex = 20
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1,0)
+
+-- CLOSE
 local Close = Instance.new("TextButton", Main)
 Close.Size = UDim2.fromOffset(26,26)
 Close.Position = UDim2.new(1,-36,0,10)
@@ -85,34 +103,11 @@ Close.BackgroundColor3 = Color3.fromRGB(40,40,45)
 Close.ZIndex = 10
 Instance.new("UICorner", Close).CornerRadius = UDim.new(1,0)
 
--- ================= CONTENT =================
-local Content = Instance.new("Frame", Main)
-Content.Size = UDim2.new(1,-28,1,-64)
-Content.Position = UDim2.new(0,14,0,52)
-Content.BackgroundTransparency = 1
-Content.ZIndex = 3
-
-local Layout = Instance.new("UIListLayout", Content)
-Layout.Padding = UDim.new(0,10)
-
 Close.MouseButton1Click:Connect(function()
 	Main.Visible = false
 	Shadow.Visible = false
 	OpenBtn.Visible = true
 end)
-
--- ================= OPEN BUTTON =================
-local OpenBtn = Instance.new("TextButton", Gui)
-OpenBtn.Size = UDim2.fromOffset(50,50)
-OpenBtn.Position = UDim2.new(0,20,0.5,-25)
-OpenBtn.BackgroundColor3 = Color3.fromRGB(0,0,0)
-OpenBtn.Text = "OPEN"
-OpenBtn.Font = Enum.Font.GothamBold
-OpenBtn.TextSize = 12
-OpenBtn.TextColor3 = Color3.fromRGB(255,255,255)
-OpenBtn.Visible = false
-OpenBtn.ZIndex = 20
-Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1,0)
 
 OpenBtn.MouseButton1Click:Connect(function()
 	Main.Visible = true
@@ -122,12 +117,11 @@ end)
 
 -- ================= API =================
 function Library:CreateJudul(t)
-	Title.Text = t
+	Title.Text = "Glenn4you | "..t
 end
 
 function Library:Toggle(text, cb)
 	local val = false
-
 	local Row = Instance.new("Frame", Content)
 	Row.Size = UDim2.new(1,0,0,32)
 	Row.BackgroundTransparency = 1
@@ -146,19 +140,10 @@ function Library:Toggle(text, cb)
 	Btn.Position = UDim2.new(1,-44,0.5,-11)
 	Btn.BackgroundColor3 = Color3.fromRGB(55,55,60)
 	Btn.Text = ""
-	Btn.ZIndex = 5
 	Instance.new("UICorner", Btn).CornerRadius = UDim.new(1,0)
-
-	local Dot = Instance.new("Frame", Btn)
-	Dot.Size = UDim2.fromOffset(18,18)
-	Dot.Position = UDim2.new(0,2,0.5,-9)
-	Dot.BackgroundColor3 = Color3.fromRGB(200,200,200)
-	Dot.ZIndex = 6
-	Instance.new("UICorner", Dot).CornerRadius = UDim.new(1,0)
 
 	Btn.MouseButton1Click:Connect(function()
 		val = not val
-		Dot.Position = val and UDim2.new(1,-20,0.5,-9) or UDim2.new(0,2,0.5,-9)
 		Btn.BackgroundColor3 = val and Color3.fromRGB(255,70,70) or Color3.fromRGB(55,55,60)
 		if cb then cb(val) end
 	end)
@@ -186,11 +171,42 @@ function Library:Button(text, btnText, cb)
 	Btn.Font = Enum.Font.GothamBold
 	Btn.TextSize = 13
 	Btn.TextColor3 = Color3.fromRGB(255,255,255)
-	Btn.ZIndex = 5
 	Instance.new("UICorner", Btn).CornerRadius = UDim.new(0,8)
 
 	Btn.MouseButton1Click:Connect(function()
 		if cb then cb() end
+	end)
+end
+
+function Library:Dropdown(text, list, cb)
+	local Row = Instance.new("Frame", Content)
+	Row.Size = UDim2.new(1,0,0,32)
+	Row.BackgroundTransparency = 1
+
+	local Label = Instance.new("TextLabel", Row)
+	Label.Size = UDim2.new(1,-100,1,0)
+	Label.BackgroundTransparency = 1
+	Label.Text = text
+	Label.Font = Enum.Font.Gotham
+	Label.TextSize = 14
+	Label.TextXAlignment = Enum.TextXAlignment.Left
+	Label.TextColor3 = Color3.fromRGB(230,230,230)
+
+	local Box = Instance.new("TextButton", Row)
+	Box.Size = UDim2.fromOffset(84,24)
+	Box.Position = UDim2.new(1,-84,0.5,-12)
+	Box.BackgroundColor3 = Color3.fromRGB(40,40,45)
+	Box.Text = list[1]
+	Box.Font = Enum.Font.Gotham
+	Box.TextSize = 13
+	Box.TextColor3 = Color3.fromRGB(230,230,230)
+	Instance.new("UICorner", Box).CornerRadius = UDim.new(0,8)
+
+	Box.MouseButton1Click:Connect(function()
+		local i = table.find(list, Box.Text) or 1
+		i = i % #list + 1
+		Box.Text = list[i]
+		if cb then cb(Box.Text) end
 	end)
 end
 
