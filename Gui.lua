@@ -1,174 +1,256 @@
--- Glenn4you UI Library (MOBILE + PC FIX)
+-- Glenn4you UI FINAL - STABLE
 
 local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
-local Library = {}
+-- ================= ROOT =================
+local UI = {}
+UI.__index = UI
 
--- GUI
+-- ================= GUI =================
 local Gui = Instance.new("ScreenGui")
 Gui.Parent = game.CoreGui
 Gui.IgnoreGuiInset = true
 Gui.ResetOnSpawn = false
+Gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 
--- SHADOW
+-- ================= SHADOW =================
 local Shadow = Instance.new("Frame", Gui)
 Shadow.Size = UDim2.fromOffset(330,270)
 Shadow.Position = UDim2.fromScale(0.5,0.5)
 Shadow.AnchorPoint = Vector2.new(0.5,0.5)
 Shadow.BackgroundColor3 = Color3.new(0,0,0)
-Shadow.BackgroundTransparency = 0.4
-Instance.new("UICorner", Shadow).CornerRadius = UDim.new(0,22)
+Shadow.BackgroundTransparency = 0.45
+Shadow.ZIndex = 1
+Instance.new("UICorner", Shadow).CornerRadius = UDim.new(0,24)
 
--- MAIN
+-- ================= MAIN =================
 local Main = Instance.new("Frame", Gui)
 Main.Size = UDim2.fromOffset(320,260)
 Main.Position = Shadow.Position
 Main.AnchorPoint = Vector2.new(0.5,0.5)
 Main.BackgroundColor3 = Color3.fromRGB(22,22,25)
 Main.Active = true
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0,20)
+Main.Selectable = true
+Main.ZIndex = 2
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0,22)
 
--- TITLE
+-- ================= TITLE =================
 local Title = Instance.new("TextLabel", Main)
-Title.Size = UDim2.new(1,-40,0,36)
-Title.Position = UDim2.new(0,12,0,8)
+Title.Size = UDim2.new(1,-60,0,36)
+Title.Position = UDim2.new(0,14,0,10)
 Title.BackgroundTransparency = 1
-Title.Text = "UI"
+Title.Text = "Glenn4you | UI"
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 16
+Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.TextColor3 = Color3.new(1,1,1)
-Title.TextXAlignment = Left
 
--- CLOSE
-local Close = Instance.new("TextButton", Main)
-Close.Size = UDim2.fromOffset(24,24)
-Close.Position = UDim2.new(1,-30,0,10)
-Close.Text = "✕"
-Close.BackgroundColor3 = Color3.fromRGB(40,40,45)
-Close.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", Close).CornerRadius = UDim.new(1,0)
-
--- CONTENT
-local Content = Instance.new("Frame", Main)
-Content.Position = UDim2.new(0,12,0,52)
-Content.Size = UDim2.new(1,-24,1,-64)
-Content.BackgroundTransparency = 1
-
-local Layout = Instance.new("UIListLayout", Content)
-Layout.Padding = UDim.new(0,10)
-
--- DRAG (PC + MOBILE)
+-- ================= DRAG =================
 do
-	local drag, startPos, startInput
+	local dragging, startPos, startInput
+
 	Title.InputBegan:Connect(function(i)
 		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-			drag = true
+			dragging = true
 			startInput = i.Position
 			startPos = Main.Position
 		end
 	end)
 
 	UIS.InputChanged:Connect(function(i)
-		if drag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+		if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
 			local delta = i.Position - startInput
 			Main.Position = startPos + UDim2.fromOffset(delta.X, delta.Y)
 			Shadow.Position = Main.Position
 		end
 	end)
 
-	UIS.InputEnded:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-			drag = false
-		end
+	UIS.InputEnded:Connect(function()
+		dragging = false
 	end)
 end
 
--- API
-function Library:CreateJudul(t)
-	Title.Text = "Glenn4you | "..t
-end
+-- ================= CLOSE =================
+local Close = Instance.new("TextButton", Main)
+Close.Size = UDim2.fromOffset(26,26)
+Close.Position = UDim2.new(1,-36,0,10)
+Close.Text = "✕"
+Close.Font = Enum.Font.GothamBold
+Close.TextSize = 16
+Close.TextColor3 = Color3.fromRGB(230,230,230)
+Close.BackgroundColor3 = Color3.fromRGB(40,40,45)
+Close.ZIndex = 5
+Instance.new("UICorner", Close).CornerRadius = UDim.new(1,0)
 
-function Library:Toggle(text, cb)
-	local Row = Instance.new("TextButton", Content)
-	Row.Size = UDim2.new(1,0,0,32)
-	Row.Text = ""
-	Row.BackgroundColor3 = Color3.fromRGB(35,35,40)
-	Instance.new("UICorner", Row).CornerRadius = UDim.new(0,8)
+-- ================= CONTENT =================
+local Content = Instance.new("Frame", Main)
+Content.Size = UDim2.new(1,-28,1,-64)
+Content.Position = UDim2.new(0,14,0,52)
+Content.BackgroundTransparency = 1
+Content.ZIndex = 3
 
-	local Label = Instance.new("TextLabel", Row)
-	Label.Size = UDim2.new(1,-50,1,0)
-	Label.BackgroundTransparency = 1
-	Label.Text = text
-	Label.Font = Enum.Font.Gotham
-	Label.TextSize = 14
-	Label.TextColor3 = Color3.new(1,1,1)
-	Label.TextXAlignment = Left
+local Layout = Instance.new("UIListLayout", Content)
+Layout.Padding = UDim.new(0,10)
 
-	local on = false
-	Row.MouseButton1Click:Connect(function()
-		on = not on
-		Row.BackgroundColor3 = on and Color3.fromRGB(255,70,70) or Color3.fromRGB(35,35,40)
-		if cb then cb(on) end
-	end)
-end
-
-function Library:Button(text, btnText, cb)
-	local Row = Instance.new("TextButton", Content)
-	Row.Size = UDim2.new(1,0,0,32)
-	Row.Text = text.."   ["..btnText.."]"
-	Row.Font = Enum.Font.Gotham
-	Row.TextSize = 14
-	Row.TextColor3 = Color3.new(1,1,1)
-	Row.BackgroundColor3 = Color3.fromRGB(40,40,45)
-	Instance.new("UICorner", Row).CornerRadius = UDim.new(0,8)
-
-	Row.MouseButton1Click:Connect(function()
-		if cb then cb() end
-	end)
-end
-
-function Library:Dropdown(text, list, cb)
-	local open = false
-
-	local Row = Instance.new("TextButton", Content)
-	Row.Size = UDim2.new(1,0,0,32)
-	Row.Text = text
-	Row.BackgroundColor3 = Color3.fromRGB(40,40,45)
-	Instance.new("UICorner", Row).CornerRadius = UDim.new(0,8)
-
-	local Drop = Instance.new("Frame", Content)
-	Drop.Size = UDim2.new(1,0,0,0)
-	Drop.ClipsDescendants = true
-	Drop.BackgroundTransparency = 1
-
-	local DLayout = Instance.new("UIListLayout", Drop)
-
-	for _,v in ipairs(list) do
-		local Opt = Instance.new("TextButton", Drop)
-		Opt.Size = UDim2.new(1,0,0,28)
-		Opt.Text = v
-		Opt.BackgroundColor3 = Color3.fromRGB(30,30,35)
-		Opt.TextColor3 = Color3.new(1,1,1)
-
-		Opt.MouseButton1Click:Connect(function()
-			cb(v)
-			open = false
-			TweenService:Create(Drop,TweenInfo.new(0.2),{Size=UDim2.new(1,0,0,0)}):Play()
-		end)
-	end
-
-	Row.MouseButton1Click:Connect(function()
-		open = not open
-		TweenService:Create(Drop,TweenInfo.new(0.2),{
-			Size = open and UDim2.new(1,0,0,#list*28) or UDim2.new(1,0,0,0)
-		}):Play()
-	end)
-end
+-- ================= OPEN BTN =================
+local OpenBtn = Instance.new("TextButton", Gui)
+OpenBtn.Size = UDim2.fromOffset(48,48)
+OpenBtn.Position = UDim2.new(0,20,0.5,-24)
+OpenBtn.Text = "OPEN"
+OpenBtn.Font = Enum.Font.GothamBold
+OpenBtn.TextSize = 12
+OpenBtn.BackgroundColor3 = Color3.fromRGB(0,0,0)
+OpenBtn.TextColor3 = Color3.new(1,1,1)
+OpenBtn.Visible = false
+OpenBtn.ZIndex = 10
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1,0)
 
 Close.MouseButton1Click:Connect(function()
 	Main.Visible = false
 	Shadow.Visible = false
+	OpenBtn.Visible = true
 end)
 
-return Library
+OpenBtn.MouseButton1Click:Connect(function()
+	Main.Visible = true
+	Shadow.Visible = true
+	OpenBtn.Visible = false
+end)
+
+-- ================= API =================
+
+function UI:CreateJudul(text)
+	Title.Text = "Glenn4you | "..text
+end
+
+function UI:Toggle(text, callback)
+	local state = false
+
+	local Row = Instance.new("Frame", Content)
+	Row.Size = UDim2.new(1,0,0,32)
+	Row.BackgroundTransparency = 1
+
+	local Label = Instance.new("TextLabel", Row)
+	Label.Size = UDim2.new(1,-80,1,0)
+	Label.BackgroundTransparency = 1
+	Label.Text = text
+	Label.Font = Enum.Font.Gotham
+	Label.TextSize = 14
+	Label.TextXAlignment = Enum.TextXAlignment.Left
+	Label.TextColor3 = Color3.fromRGB(230,230,230)
+
+	local Btn = Instance.new("TextButton", Row)
+	Btn.Size = UDim2.fromOffset(44,22)
+	Btn.Position = UDim2.new(1,-44,0.5,-11)
+	Btn.BackgroundColor3 = Color3.fromRGB(55,55,60)
+	Btn.Text = ""
+	Instance.new("UICorner", Btn).CornerRadius = UDim.new(1,0)
+
+	local Dot = Instance.new("Frame", Btn)
+	Dot.Size = UDim2.fromOffset(18,18)
+	Dot.Position = UDim2.new(0,2,0.5,-9)
+	Dot.BackgroundColor3 = Color3.fromRGB(200,200,200)
+	Instance.new("UICorner", Dot).CornerRadius = UDim.new(1,0)
+
+	Btn.MouseButton1Click:Connect(function()
+		state = not state
+		Dot.Position = state and UDim2.new(1,-20,0.5,-9) or UDim2.new(0,2,0.5,-9)
+		Btn.BackgroundColor3 = state and Color3.fromRGB(255,70,70) or Color3.fromRGB(55,55,60)
+		if callback then callback(state) end
+	end)
+end
+
+function UI:Button(text, btnText, callback)
+	local Row = Instance.new("Frame", Content)
+	Row.Size = UDim2.new(1,0,0,32)
+	Row.BackgroundTransparency = 1
+
+	local Label = Instance.new("TextLabel", Row)
+	Label.Size = UDim2.new(1,-110,1,0)
+	Label.BackgroundTransparency = 1
+	Label.Text = text
+	Label.Font = Enum.Font.Gotham
+	Label.TextSize = 14
+	Label.TextXAlignment = Enum.TextXAlignment.Left
+	Label.TextColor3 = Color3.fromRGB(230,230,230)
+
+	local Btn = Instance.new("TextButton", Row)
+	Btn.Size = UDim2.fromOffset(90,24)
+	Btn.Position = UDim2.new(1,-90,0.5,-12)
+	Btn.BackgroundColor3 = Color3.fromRGB(45,45,50)
+	Btn.Text = btnText
+	Btn.Font = Enum.Font.GothamBold
+	Btn.TextSize = 13
+	Btn.TextColor3 = Color3.new(1,1,1)
+	Instance.new("UICorner", Btn).CornerRadius = UDim.new(0,8)
+
+	Btn.MouseButton1Click:Connect(function()
+		if callback then callback() end
+	end)
+end
+
+function UI:Dropdown(text, list, callback)
+	local open = false
+
+	local Row = Instance.new("Frame", Content)
+	Row.Size = UDim2.new(1,0,0,32)
+	Row.BackgroundTransparency = 1
+	Row.ClipsDescendants = false
+
+	local Label = Instance.new("TextLabel", Row)
+	Label.Size = UDim2.new(1,-100,1,0)
+	Label.BackgroundTransparency = 1
+	Label.Text = text
+	Label.Font = Enum.Font.Gotham
+	Label.TextSize = 14
+	Label.TextXAlignment = Enum.TextXAlignment.Left
+	Label.TextColor3 = Color3.fromRGB(230,230,230)
+
+	local Box = Instance.new("TextButton", Row)
+	Box.Size = UDim2.fromOffset(84,24)
+	Box.Position = UDim2.new(1,-84,0.5,-12)
+	Box.BackgroundColor3 = Color3.fromRGB(40,40,45)
+	Box.Text = list[1]
+	Box.Font = Enum.Font.Gotham
+	Box.TextSize = 13
+	Box.TextColor3 = Color3.new(1,1,1)
+	Instance.new("UICorner", Box).CornerRadius = UDim.new(0,8)
+
+	local Drop = Instance.new("Frame", Row)
+	Drop.Position = UDim2.new(1,-84,1,6)
+	Drop.Size = UDim2.fromOffset(84,0)
+	Drop.BackgroundColor3 = Color3.fromRGB(40,40,45)
+	Drop.ClipsDescendants = true
+	Drop.ZIndex = 20
+	Instance.new("UICorner", Drop).CornerRadius = UDim.new(0,8)
+
+	for i,v in ipairs(list) do
+		local Opt = Instance.new("TextButton", Drop)
+		Opt.Size = UDim2.new(1,0,0,26)
+		Opt.Position = UDim2.new(0,0,0,(i-1)*26)
+		Opt.BackgroundTransparency = 1
+		Opt.Text = v
+		Opt.Font = Enum.Font.Gotham
+		Opt.TextSize = 13
+		Opt.TextColor3 = Color3.fromRGB(220,220,220)
+
+		Opt.MouseButton1Click:Connect(function()
+			Box.Text = v
+			open = false
+			TweenService:Create(Drop,TweenInfo.new(0.2),{
+				Size = UDim2.fromOffset(84,0)
+			}):Play()
+			if callback then callback(v) end
+		end)
+	end
+
+	Box.MouseButton1Click:Connect(function()
+		open = not open
+		TweenService:Create(Drop,TweenInfo.new(0.2),{
+			Size = open and UDim2.fromOffset(84,#list*26) or UDim2.fromOffset(84,0)
+		}):Play()
+	end)
+end
+
+return setmetatable({}, UI)
