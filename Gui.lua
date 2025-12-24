@@ -1,163 +1,110 @@
--- Glenn4you UI FINAL (DIRECT EXECUTE, MOBILE SAFE)
+-- Glenn Heart UI Core
+-- Delta Executor | Mobile Friendly
 
-local UIS = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
+local GlennUI = {}
+GlennUI.__index = GlennUI
 
-local UI = {}
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
--- ================= GUI =================
-local Gui = Instance.new("ScreenGui", game.CoreGui)
-Gui.IgnoreGuiInset = true
-Gui.ResetOnSpawn = false
-Gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+-- UI ROOT
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "GlennHeartUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
 
--- ================= SHADOW =================
-local Shadow = Instance.new("Frame", Gui)
-Shadow.Size = UDim2.fromOffset(330,270)
-Shadow.Position = UDim2.fromScale(0.5,0.5)
-Shadow.AnchorPoint = Vector2.new(0.5,0.5)
-Shadow.BackgroundColor3 = Color3.new(0,0,0)
-Shadow.BackgroundTransparency = 0.45
-Shadow.ZIndex = 1
-Instance.new("UICorner", Shadow).CornerRadius = UDim.new(0,24)
-
--- ================= MAIN =================
-local Main = Instance.new("Frame", Gui)
-Main.Size = UDim2.fromOffset(320,260)
-Main.Position = Shadow.Position
-Main.AnchorPoint = Vector2.new(0.5,0.5)
-Main.BackgroundColor3 = Color3.fromRGB(22,22,25)
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.fromScale(0.7,0.6)
+Main.Position = UDim2.fromScale(0.15,0.2)
+Main.BackgroundColor3 = Color3.fromRGB(30,30,30)
+Main.Visible = true
 Main.Active = true
-Main.Selectable = true
-Main.ZIndex = 2
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0,22)
+Main.Draggable = true
 
--- ================= TITLE =================
+local Corner = Instance.new("UICorner", Main)
+Corner.CornerRadius = UDim.new(0,18)
+
 local Title = Instance.new("TextLabel", Main)
-Title.Size = UDim2.new(1,-60,0,36)
-Title.Position = UDim2.new(0,14,0,10)
+Title.Size = UDim2.new(1,0,0,50)
 Title.BackgroundTransparency = 1
-Title.Text = "Glenn4you | UI"
+Title.Text = "GLENN UI"
+Title.TextColor3 = Color3.fromRGB(255,255,255)
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 16
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.TextColor3 = Color3.new(1,1,1)
-Title.ZIndex = 5
+Title.TextSize = 22
 
--- ================= DRAG =================
-do
-	local dragging, startPos, startInput
-	Title.InputBegan:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			startInput = i.Position
-			startPos = Main.Position
-		end
-	end)
-	UIS.InputChanged:Connect(function(i)
-		if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-			local d = i.Position - startInput
-			Main.Position = startPos + UDim2.fromOffset(d.X,d.Y)
-			Shadow.Position = Main.Position
-		end
-	end)
-	UIS.InputEnded:Connect(function()
-		dragging = false
-	end)
+local Body = Instance.new("Frame", Main)
+Body.Position = UDim2.fromScale(0,0.15)
+Body.Size = UDim2.fromScale(1,0.85)
+Body.BackgroundTransparency = 1
+
+local UIList = Instance.new("UIListLayout", Body)
+UIList.Padding = UDim.new(0,8)
+
+-- ======================
+-- SECTION
+-- ======================
+function GlennUI:CreateSection(name)
+    local Section = {}
+
+    local Holder = Instance.new("Frame", Body)
+    Holder.Size = UDim2.new(1,-12,0,40)
+    Holder.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    Holder.AutomaticSize = Enum.AutomaticSize.Y
+
+    Instance.new("UICorner", Holder).CornerRadius = UDim.new(0,12)
+
+    local Title = Instance.new("TextLabel", Holder)
+    Title.Size = UDim2.new(1,0,0,40)
+    Title.BackgroundTransparency = 1
+    Title.Text = name
+    Title.TextColor3 = Color3.fromRGB(255,255,255)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 16
+
+    local List = Instance.new("UIListLayout", Holder)
+    List.Padding = UDim.new(0,6)
+
+    -- ======================
+    -- TOGGLE
+    -- ======================
+    function Section:CreateToggle(opt)
+        local Toggle = {}
+        local State = opt.Default or false
+
+        local Btn = Instance.new("TextButton", Holder)
+        Btn.Size = UDim2.new(1,-20,0,36)
+        Btn.Text = opt.Name
+        Btn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+        Btn.TextColor3 = Color3.fromRGB(255,255,255)
+        Btn.Font = Enum.Font.Gotham
+        Btn.TextSize = 14
+        Instance.new("UICorner", Btn).CornerRadius = UDim.new(0,10)
+
+        local function Refresh()
+            Btn.Text = opt.Name.." : "..(State and "ON" or "OFF")
+        end
+        Refresh()
+
+        Btn.MouseButton1Click:Connect(function()
+            State = not State
+            Refresh()
+            pcall(opt.Callback, State)
+        end)
+
+        function Toggle:Set(v)
+            State = v
+            Refresh()
+            pcall(opt.Callback, State)
+        end
+
+        function Toggle:Get()
+            return State
+        end
+
+        return Toggle
+    end
+
+    return Section
 end
 
--- ================= CLOSE =================
-local Close = Instance.new("TextButton", Main)
-Close.Size = UDim2.fromOffset(26,26)
-Close.Position = UDim2.new(1,-36,0,10)
-Close.Text = "✕"
-Close.Font = Enum.Font.GothamBold
-Close.TextSize = 16
-Close.TextColor3 = Color3.fromRGB(230,230,230)
-Close.BackgroundColor3 = Color3.fromRGB(40,40,45)
-Close.ZIndex = 10
-Instance.new("UICorner", Close).CornerRadius = UDim.new(1,0)
-
--- ================= CONTENT =================
-local Content = Instance.new("Frame", Main)
-Content.Size = UDim2.new(1,-28,1,-64)
-Content.Position = UDim2.new(0,14,0,52)
-Content.BackgroundTransparency = 1
-Content.ZIndex = 3
-
-local Layout = Instance.new("UIListLayout", Content)
-Layout.Padding = UDim.new(0,10)
-
--- ================= API =================
-
-function UI:CreateJudul(text)
-	Title.Text = "Glenn4you | "..text
-end
-
-function UI:Toggle(text, callback)
-	local Row = Instance.new("Frame", Content)
-	Row.Size = UDim2.new(1,0,0,32)
-	Row.BackgroundTransparency = 1
-
-	local Label = Instance.new("TextLabel", Row)
-	Label.Size = UDim2.new(1,-80,1,0)
-	Label.BackgroundTransparency = 1
-	Label.Text = text
-	Label.Font = Enum.Font.Gotham
-	Label.TextSize = 14
-	Label.TextXAlignment = Enum.TextXAlignment.Left
-	Label.TextColor3 = Color3.fromRGB(230,230,230)
-
-	local Btn = Instance.new("TextButton", Row)
-	Btn.Size = UDim2.fromOffset(44,22)
-	Btn.Position = UDim2.new(1,-44,0.5,-11)
-	Btn.BackgroundColor3 = Color3.fromRGB(55,55,60)
-	Btn.Text = ""
-	Instance.new("UICorner", Btn).CornerRadius = UDim.new(1,0)
-
-	local Dot = Instance.new("Frame", Btn)
-	Dot.Size = UDim2.fromOffset(18,18)
-	Dot.Position = UDim2.new(0,2,0.5,-9)
-	Dot.BackgroundColor3 = Color3.fromRGB(200,200,200)
-	Instance.new("UICorner", Dot).CornerRadius = UDim.new(1,0)
-
-	local state = false
-	Btn.MouseButton1Click:Connect(function()
-		state = not state
-		Dot.Position = state and UDim2.new(1,-20,0.5,-9) or UDim2.new(0,2,0.5,-9)
-		Btn.BackgroundColor3 = state and Color3.fromRGB(255,70,70) or Color3.fromRGB(55,55,60)
-		if callback then callback(state) end
-	end)
-end
-
-function UI:Button(text, btnText, callback)
-	local Row = Instance.new("Frame", Content)
-	Row.Size = UDim2.new(1,0,0,32)
-	Row.BackgroundTransparency = 1
-
-	local Label = Instance.new("TextLabel", Row)
-	Label.Size = UDim2.new(1,-110,1,0)
-	Label.BackgroundTransparency = 1
-	Label.Text = text
-	Label.Font = Enum.Font.Gotham
-	Label.TextSize = 14
-	Label.TextXAlignment = Enum.TextXAlignment.Left
-	Label.TextColor3 = Color3.fromRGB(230,230,230)
-
-	local Btn = Instance.new("TextButton", Row)
-	Btn.Size = UDim2.fromOffset(90,24)
-	Btn.Position = UDim2.new(1,-90,0.5,-12)
-	Btn.BackgroundColor3 = Color3.fromRGB(45,45,50)
-	Btn.Text = btnText
-	Btn.Font = Enum.Font.GothamBold
-	Btn.TextSize = 13
-	Btn.TextColor3 = Color3.new(1,1,1)
-	Instance.new("UICorner", Btn).CornerRadius = UDim.new(0,8)
-
-	Btn.MouseButton1Click:Connect(function()
-		if callback then callback() end
-	end)
-end
-
--- ================= RETURN =================
-return UI
+return GlennUI
