@@ -1,11 +1,15 @@
 -- Glenn4You | Premium Clean UI (Animated Gradient Edition)
--- Delta Executor | Mobile Friendly
+-- Delta Executor | Mobile Friendly | RESPAWN SAFE
 
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
 local player = Players.LocalPlayer
+
+if CoreGui:FindFirstChild("Glenn4You_UI") then
+    CoreGui.Glenn4You_UI:Destroy()
+end
 
 local GlennAPI = {}
 local AutoY = 80
@@ -29,7 +33,8 @@ local Theme = {
 
 -- ================= GUI =================
 local gui = Instance.new("ScreenGui")
-gui.Parent = player:WaitForChild("PlayerGui")
+gui.Name = "Glenn4You_UI"
+gui.Parent = CoreGui
 gui.ResetOnSpawn = false
 
 -- ================= MAIN =================
@@ -113,9 +118,8 @@ close.BackgroundColor3 = Color3.fromRGB(35,35,35)
 close.AutoButtonColor = false
 Instance.new("UICorner", close).CornerRadius = UDim.new(1,0)
 
--- ================= API TOGGLE =================
+-- ================= TOGGLE =================
 function GlennAPI:CreateToggle(opt)
-    local text = opt.Name
     local y = AutoY
     AutoY += 45
 
@@ -126,7 +130,7 @@ function GlennAPI:CreateToggle(opt)
 
     local label = Instance.new("TextLabel", row)
     label.Size = UDim2.new(1,-70,1,0)
-    label.Text = text
+    label.Text = opt.Name
     label.Font = Theme.MainFont
     label.TextSize = 14
     label.TextColor3 = Theme.White
@@ -164,7 +168,7 @@ function GlennAPI:CreateToggle(opt)
     return {Set=function(_,v) State=v refresh() end, Get=function() return State end}
 end
 
--- ================= API DROPDOWN =================
+-- ================= DROPDOWN =================
 function GlennAPI:CreateDropdown(opt)
     local options = opt.Options
     local Value = opt.Default or options[1]
